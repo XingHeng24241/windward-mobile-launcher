@@ -16,6 +16,10 @@ release
 *.apk
 output.json
 android-ndk-r26d/
+release/
+*.pepk
+windward-*.jks
+.secrets/
 
 # IntelliJ
 *.iml

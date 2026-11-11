@@ -1,20 +1,19 @@
 <div align="center">
-    <img width="75" src="/FCL/src/main/res/drawable/img_app.png"></img>
+    <img width="160" src="/FCL/src/main/res/drawable-nodpi/windward_launcher_source.jpg"></img>
 </div>
 
-<h1 align="center">Fold Craft Launcher</h1>
+<h1 align="center">Windward 手机版启动器</h1>
 
 <div align="center">
 
-[![Android CI](https://github.com/FCL-Team/FoldCraftLauncher/actions/workflows/build.yml/badge.svg)](https://github.com/FCL-Team/FoldCraftLauncher/actions/workflows/build.yml)
-![Downloads](https://img.shields.io/github/downloads/FCL-Team/FoldCraftLauncher/total?style=flat-square&color=f18cb9)
-![Release](https://img.shields.io/github/v/release/FCL-Team/FoldCraftLauncher?style=flat-square&color=f18cb9)
-
-[![Discord](https://img.shields.io/badge/Discord-red?logo=discord&logoColor=white)](https://discord.gg/ffhvuXTwyV)
-[![QQ](https://img.shields.io/badge/QQ-green)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=LwxydGEvBZJnn09sXOjkQo9tuuLcYwx5&authKey=seyY5pPUCIHMWS5FqVryq926T0G2GarSXetpxxV9DJxBVt%2FPcg1vxN%2F%2FXpsCowyk&noverify=0&group_code=762054349)
-[![Sponsor](https://img.shields.io/badge/sponsor-blue?logo=GitHub-Sponsors)](https://afdian.com/@tungs)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](./LICENSE)
+[![Upstream: FCL 1.3.4.5](https://img.shields.io/badge/Upstream-FCL%201.3.4.5-green.svg)](https://github.com/FCL-Team/FoldCraftLauncher/releases/tag/1.3.4.5)
 
 </div>
+
+> **非官方修改版。** 本项目基于 [Fold Craft Launcher](https://github.com/FCL-Team/FoldCraftLauncher) `1.3.4.5` 制作，与 FCL-Team 无隶属或官方合作关系。
+>
+> Windward 保留原版 FCL 的游戏、Java、模组、整合包与资源下载功能，只替换品牌和独立包身份，并关闭启动器自身更新与 FCL 官方公告。项目继续遵循 GPL-3.0；详细修改见 [MODIFICATIONS.md](./MODIFICATIONS.md)。
 
 🌍 **语言**  
 简体中文 | [English](./README_EN.md) | [Русский язык](./README_RU.md)

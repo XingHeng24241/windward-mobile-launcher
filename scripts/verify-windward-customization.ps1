@@ -85,6 +85,7 @@ Assert-Text $buildFile 'com\.windward\.launcher\.debug\.provider' 'Windward debu
 Assert-Text $buildFile 'Windward-Mobile-Launcher-' 'Windward APK output name'
 
 Assert-Text 'FCL/src/main/res/values/strings.xml' '<string name="app_name" translatable="false">Windward 手机版启动器</string>' 'Windward application label'
+Assert-Text 'FCL/src/main/res/values/strings.xml' '<string name="file_browser_provider" translatable="false">com\.windward\.launcher\.provider</string>' 'Windward release provider authority'
 Assert-NoText 'FCL/src/main/java/com/tungsten/fcl/activity/MainActivity.kt' 'UpdateChecker|checkAuto' 'launcher automatic update call'
 Assert-NoText 'FCL/src/main/java/com/tungsten/fcl/ui/setting/LauncherSettingAdapter.kt' 'CHECK_UPDATE|SHOW_CHANGELOG|settings_launcher_upgrade' 'launcher update setting row'
 Assert-NoText 'FCL/src/main/java/com/tungsten/fcl/ui/setting/LauncherSettingPage.java' 'UpdateChecker|CHECK_UPDATE|SHOW_CHANGELOG' 'launcher update setting dispatch'

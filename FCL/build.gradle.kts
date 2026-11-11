@@ -1,8 +1,6 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType.ABI
 import com.android.build.gradle.tasks.MergeSourceSetFolders
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Properties
 
 plugins {
@@ -40,7 +38,13 @@ android {
         localProperty = Properties()
         file("${rootDir}/local.properties").inputStream().use { localProperty.load(it) }
     }
-    val pwd = System.getenv("FCL_KEYSTORE_PASSWORD") ?: localProperty?.getProperty("pwd")
+    val windwardKeystorePath = System.getenv("WINDWARD_KEYSTORE_PATH")
+        ?: localProperty?.getProperty("windward.keystore.path")
+    val windwardKeystorePassword = System.getenv("WINDWARD_KEYSTORE_PASSWORD")
+        ?: localProperty?.getProperty("windward.keystore.password")
+    val windwardKeyAlias = System.getenv("WINDWARD_KEY_ALIAS")
+        ?: localProperty?.getProperty("windward.key.alias")
+        ?: "Windward-Release"
     val curseApiKey = System.getenv("CURSE_API_KEY") ?: localProperty?.getProperty("curse.api.key")
     val oauthApiKey = System.getenv("OAUTH_API_KEY") ?: localProperty?.getProperty("oauth.api.key")
     // 命令行 -Darch 优先；local.properties 仅在命令行未指定时生效
@@ -52,11 +56,13 @@ android {
         System.setProperty("arch", "arm64")
 
     signingConfigs {
-        create("FCLKey") {
-            storeFile = file("../key-store.jks")
-            storePassword = pwd
-            keyAlias = "FCL-Key"
-            keyPassword = pwd
+        create("WindwardReleaseKey") {
+            if (!windwardKeystorePath.isNullOrBlank()) {
+                storeFile = file(windwardKeystorePath)
+            }
+            storePassword = windwardKeystorePassword
+            keyAlias = windwardKeyAlias
+            keyPassword = windwardKeystorePassword
         }
         create("FCLDebugKey") {
             storeFile = file("../debug-key.jks")
@@ -73,11 +79,11 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.tungsten.fcl"
+        applicationId = "com.windward.launcher"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 1345
-        versionName = "1.3.4.5"
+        versionName = "1.3.4.5-Windward.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
@@ -91,18 +97,18 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("FCLKey")
+            signingConfig = signingConfigs.getByName("WindwardReleaseKey")
         }
         getByName("debug") {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("FCLKey")
+            signingConfig = signingConfigs.getByName("FCLDebugKey")
         }
         create("fordebug") {
             initWith(getByName("debug"))
             applicationIdSuffix = ".debug"
             signingConfig = signingConfigs.getByName("FCLDebugKey")
             // 与 FileProvider authority（${applicationId}.provider）保持一致（原 FCLLibrary 模块的 resValue）
-            resValue("string", "file_browser_provider", "com.tungsten.fcl.debug.provider")
+            resValue("string", "file_browser_provider", "com.windward.launcher.debug.provider")
         }
         configureEach {
             resValue("string", "app_version", defaultConfig.versionName.toString())
@@ -185,8 +191,9 @@ androidComponents {
         variant.outputs.forEach { output ->
             if (output is com.android.build.api.variant.impl.VariantOutputImpl) {
                 (output.getFilter(ABI)?.identifier ?: "all").let { abi ->
+                    val target = if (abi == "all") "universal" else abi
                     output.outputFileName =
-                        "FCL-${variant.buildType}-${project.android.defaultConfig.versionName}-${abi}.apk"
+                        "Windward-Mobile-Launcher-${project.android.defaultConfig.versionName}-${target}.apk"
                 }
             }
         }
@@ -309,39 +316,4 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.ext.junit)
-}
-
-tasks.register("updateMap") {
-    doLast {
-        val list = mutableListOf<String>()
-        val mapFile = file("${rootDir}/version_map.json")
-        mapFile.forEachLine {
-            list.add(
-                when {
-                    it.contains("versionCode") -> it.replace(
-                        Regex("[0-9]+"),
-                        android.defaultConfig.versionCode.toString()
-                    )
-
-                    it.contains("versionName") -> it.replace(
-                        Regex("\\d+(\\.\\d+)+"),
-                        android.defaultConfig.versionName.toString()
-                    )
-
-                    it.contains("date") -> it.replace(
-                        Regex("\\d{4}\\.\\d{2}\\.\\d{2}"),
-                        SimpleDateFormat("yyyy.MM.dd").format(Date())
-                    )
-
-                    it.contains("url") -> it.replace(
-                        Regex("\\d+(\\.\\d+)+"),
-                        android.defaultConfig.versionName.toString()
-                    )
-
-                    else -> it
-                }
-            )
-        }
-        mapFile.writeText(list.joinToString("\n"), Charsets.UTF_8)
-    }
 }

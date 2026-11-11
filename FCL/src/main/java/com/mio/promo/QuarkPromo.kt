@@ -19,7 +19,7 @@ object QuarkPromo {
 
     private const val PREF_KEY_NETDISK_URL = "quark_netdisk_url"
 
-    /** UpdateChecker 拉取远程 version_map.json 成功后调用，缓存最新网盘链接 */
+    /** 缓存可选推广所需的网盘链接；Windward 固定版本不会在后台自动刷新此值。 */
     @JvmStatic
     fun updateNetdiskUrl(context: Context, url: String?) {
         if (url.isNullOrEmpty()) return
