@@ -71,6 +71,10 @@ if (-not (Test-Path -LiteralPath $assetPath -PathType Leaf)) {
 Assert-Text 'FCL/src/main/java/com/tungsten/fcl/game/WindwardModpackBootstrap.java' `
     'ASSET_SHA256[\s\S]*D84FAA9172EB2561C323EB14E9AFC2850303DD3EDBCA42D0BACEE0BCC327379F' `
     'fixed MRPACK identity'
+Assert-Text 'FCL/src/main/java/com/tungsten/fcl/game/WindwardModpackBootstrap.java' `
+    'CONFIGURATION_FILE\s*=\s*"modpack\.cfg"' 'actual FCL modpack configuration filename'
+Assert-Text 'FCL/src/main/java/com/tungsten/fcl/game/WindwardModpackBootstrap.java' `
+    'recoverCompletedInstallationAtGameDirectory' 'safe completed-install recovery'
 Assert-Text 'FCL/src/main/java/com/tungsten/fcl/activity/SplashActivity.kt' `
     'WindwardModpackBootstrap\.isInstalled' 'bootstrap completion gate'
 Assert-Text 'FCL/src/main/java/com/tungsten/fcl/fragment/RuntimeFragment.kt' `

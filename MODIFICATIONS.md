@@ -15,8 +15,9 @@ Windward 手机版启动器是 Fold Craft Launcher（FCL）的非官方修改版
 - 应用名称改为“Windward 手机版启动器”。
 - Android application ID 改为 `com.windward.launcher`，可与官方 FCL 并存安装。
 - 桌面和启动页图标替换为用户提供的 Windward 图标。
-- 当前版本名称为 `1.3.4.5-Windward.2`，Android `versionCode` 为 `1346`。
+- 当前版本名称为 `1.3.4.5-Windward.3`，Android `versionCode` 为 `1347`。
 - 首次运行的环境安装页会继续安装固定的 Windward 客户端整合包。
+- 修复首次整合包安装完成后将 `modpack.cfg` 误判为缺少 `modpack.json` 的问题，并支持安全恢复已完成的 `.2` 安装。
 - 删除启动器自身的自动/手动更新、更新说明和 APK 更新下载。
 - 删除 FCL 官方公告请求和公告界面。
 - 更新内置隐私说明，使联网行为与修改后的程序一致。

@@ -343,6 +343,9 @@ class RuntimeFragment : FCLFragment(), View.OnClickListener {
             is WindwardModpackBootstrap.InvalidBundledModpackException ->
                 getString(R.string.splash_runtime_modpack_invalid)
 
+            is WindwardModpackBootstrap.IncompleteInstallationException ->
+                error.localizedMessage ?: getString(R.string.splash_runtime_modpack_failed)
+
             is WindwardModpackBootstrap.AlreadyInstalledException -> {
                 markModpackReady()
                 return
