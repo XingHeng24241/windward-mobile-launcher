@@ -80,7 +80,8 @@ function Assert-LiteralAbsentFromTree {
 
 $buildFile = 'FCL/build.gradle.kts'
 Assert-Text $buildFile 'applicationId\s*=\s*"com\.windward\.launcher"' 'Windward applicationId'
-Assert-Text $buildFile 'versionName\s*=\s*"1\.3\.4\.5-Windward\.1"' 'Windward versionName'
+Assert-Text $buildFile 'versionCode\s*=\s*1346' 'Windward versionCode'
+Assert-Text $buildFile 'versionName\s*=\s*"1\.3\.4\.5-Windward\.2"' 'Windward versionName'
 Assert-Text $buildFile 'com\.windward\.launcher\.debug\.provider' 'Windward debug provider authority'
 Assert-Text $buildFile 'Windward-Mobile-Launcher-' 'Windward APK output name'
 

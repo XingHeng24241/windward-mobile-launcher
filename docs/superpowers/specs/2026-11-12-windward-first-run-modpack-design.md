@@ -10,6 +10,7 @@
 
 ## 2. 固定输入
 
+- 本功能发布版本：`1.3.4.5-Windward.2`（Android `versionCode` 1346）
 - 源文件：`D:\下载\modpack.mrpack`
 - 文件格式：标准 Modrinth `.mrpack`
 - SHA-256：`D84FAA9172EB2561C323EB14E9AFC2850303DD3EDBCA42D0BACEE0BCC327379F`

@@ -12,9 +12,18 @@ import androidx.lifecycle.lifecycleScope
 import com.tungsten.fcl.R
 import com.tungsten.fcl.activity.SplashActivity
 import com.tungsten.fcl.databinding.FragmentRuntimeBinding
+import com.tungsten.fcl.game.WindwardModpackBootstrap
+import com.tungsten.fcl.setting.DownloadProviders
+import com.tungsten.fcl.setting.Profile
+import com.tungsten.fcl.setting.Profiles
 import com.tungsten.fcl.util.RuntimeUtils
 import com.tungsten.fclauncher.utils.Architecture
 import com.tungsten.fclauncher.utils.FCLPath
+import com.tungsten.fclcore.fakefx.beans.value.ChangeListener
+import com.tungsten.fclcore.task.Schedulers
+import com.tungsten.fclcore.task.Task
+import com.tungsten.fclcore.task.TaskExecutor
+import com.tungsten.fclcore.task.TaskListener
 import com.tungsten.fcllibrary.component.FCLFragment
 import com.tungsten.fcllibrary.component.dialog.FCLAlertDialog
 import com.tungsten.fcllibrary.component.theme.ThemeEngine
@@ -35,6 +44,7 @@ class RuntimeFragment : FCLFragment(), View.OnClickListener {
     var java17 = false
     var java21 = false
     var jna = false
+    var windwardPack = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -61,6 +71,7 @@ class RuntimeFragment : FCLFragment(), View.OnClickListener {
         java21 = (activity as SplashActivity).java21
         java25 = (activity as SplashActivity).java25
         jna = (activity as SplashActivity).jna
+        windwardPack = (activity as SplashActivity).windwardPack
     }
 
     private fun refreshDrawables() {
@@ -82,21 +93,31 @@ class RuntimeFragment : FCLFragment(), View.OnClickListener {
                 java21State.setBackgroundDrawable(if (java21) stateDone else stateUpdate)
                 java25State.setBackgroundDrawable(if (java25) stateDone else stateUpdate)
                 jnaState.setBackgroundDrawable(if (jna) stateDone else stateUpdate)
+                modpackState.setBackgroundDrawable(if (windwardPack) stateDone else stateUpdate)
             }
         }
     }
 
-    private val isLatest: Boolean
+    private val areRuntimesLatest: Boolean
         get() = lwjgl && cacio && cacio17 && java8 && java25 && java17 && java21 && jna
+
+    private val isLatest: Boolean
+        get() = areRuntimesLatest && windwardPack
 
     private fun check() {
         if (isLatest) {
             view?.visibility = View.GONE
             (activity as SplashActivity).enterLauncher()
+        } else if (areRuntimesLatest && installing && !modpackInstalling) {
+            launchModpackInstall()
         }
     }
 
     private var installing = false
+    private var modpackInstalling = false
+    private var modpackExecutor: TaskExecutor? = null
+    private var displayedTask: Task<*>? = null
+    private var displayedMessageListener: ChangeListener<String>? = null
 
     private fun install() {
         if (installing) return
@@ -169,6 +190,168 @@ class RuntimeFragment : FCLFragment(), View.OnClickListener {
                 }
             }
         }
+        check()
+    }
+
+    private fun launchModpackInstall() {
+        if (modpackInstalling || windwardPack) return
+        modpackInstalling = true
+        bind.apply {
+            modpackState.visibility = View.GONE
+            modpackProgress.visibility = View.VISIBLE
+            modpackDetail.setText(R.string.splash_runtime_modpack_preparing)
+            modpackDetail.visibility = View.VISIBLE
+        }
+
+        val appContext = requireContext().applicationContext
+        lifecycleScope.launch {
+            try {
+                (activity as SplashActivity).prepareLauncherCore()
+                val alreadyInstalled = withContext(Dispatchers.IO) {
+                    WindwardModpackBootstrap.isInstalled(appContext)
+                }
+                if (alreadyInstalled) {
+                    markModpackReady()
+                    return@launch
+                }
+                val profile = Profiles.getSelectedProfile()
+                val task = withContext(Dispatchers.IO) {
+                    WindwardModpackBootstrap.createInstallTask(appContext, profile)
+                }
+                startModpackTask(profile, task)
+            } catch (error: Exception) {
+                finishModpackFailure(error)
+            }
+        }
+    }
+
+    private fun startModpackTask(profile: Profile, task: Task<*>) {
+        val executor = task.executor(object : TaskListener() {
+            override fun onRunning(task: Task<*>) {
+                displayTask(task)
+            }
+
+            override fun onStop(success: Boolean, executor: TaskExecutor) {
+                Schedulers.androidUIThread().execute {
+                    clearDisplayedTask()
+                    if (success) {
+                        finishModpackSuccess(profile)
+                    } else {
+                        finishModpackFailure(executor.exception)
+                    }
+                }
+            }
+        })
+        modpackExecutor = executor
+        executor.start()
+    }
+
+    private fun displayTask(task: Task<*>) {
+        Schedulers.androidUIThread().execute {
+            if (!isAdded || view == null) return@execute
+            clearDisplayedTask()
+            displayedTask = task
+            bind.modpackProgress.percentProgressProperty().bind(task.progressProperty())
+            bind.modpackDetail.text = describeTask(task)
+            val listener = ChangeListener<String> { _, _, message ->
+                if (!message.isNullOrBlank() && isAdded && view != null) {
+                    bind.modpackDetail.text = message
+                }
+            }
+            task.messageProperty().addListener(listener)
+            displayedMessageListener = listener
+        }
+    }
+
+    private fun describeTask(task: Task<*>): String {
+        val stage = task.stage ?: task.inheritedStage
+        return when {
+            stage == "fcl.modpack.download" ->
+                getString(R.string.splash_runtime_modpack_downloading)
+
+            stage == "fcl.modpack" -> getString(R.string.splash_runtime_modpack_unpacking)
+            stage?.startsWith("fcl.install.minecraft") == true ->
+                getString(R.string.splash_runtime_modpack_minecraft)
+
+            stage?.startsWith("fcl.install.fabric") == true ->
+                getString(R.string.splash_runtime_modpack_fabric)
+
+            else -> getString(R.string.splash_runtime_modpack_installing)
+        }
+    }
+
+    private fun clearDisplayedTask() {
+        displayedTask?.let { task ->
+            displayedMessageListener?.let { task.messageProperty().removeListener(it) }
+        }
+        displayedTask = null
+        displayedMessageListener = null
+        if (::bind.isInitialized) {
+            bind.modpackProgress.percentProgressProperty().unbind()
+        }
+    }
+
+    private fun finishModpackSuccess(profile: Profile) {
+        val appContext = context?.applicationContext ?: return
+        lifecycleScope.launch {
+            val error = withContext(Dispatchers.IO) {
+                runCatching {
+                    WindwardModpackBootstrap.completeInstallation(appContext, profile)
+                }.exceptionOrNull()
+            }
+            if (error != null) {
+                finishModpackFailure(error)
+                return@launch
+            }
+
+            profile.selectedVersion = WindwardModpackBootstrap.VERSION_NAME
+            markModpackReady()
+        }
+    }
+
+    private fun markModpackReady() {
+        windwardPack = true
+        (activity as? SplashActivity)?.windwardPack = true
+        modpackInstalling = false
+        installing = false
+        if (!isAdded || view == null) return
+        bind.apply {
+            modpackProgress.visibility = View.GONE
+            modpackState.visibility = View.VISIBLE
+            modpackDetail.visibility = View.GONE
+        }
+        refreshDrawables()
+        check()
+    }
+
+    private fun finishModpackFailure(error: Throwable?) {
+        modpackExecutor = null
+        modpackInstalling = false
+        installing = false
+        if (!isAdded || view == null) return
+        clearDisplayedTask()
+        bind.apply {
+            modpackProgress.visibility = View.GONE
+            modpackState.visibility = View.VISIBLE
+            modpackDetail.visibility = View.GONE
+        }
+        refreshDrawables()
+        val message = when (error) {
+            is WindwardModpackBootstrap.VersionConflictException ->
+                getString(R.string.splash_runtime_modpack_conflict)
+
+            is WindwardModpackBootstrap.InvalidBundledModpackException ->
+                getString(R.string.splash_runtime_modpack_invalid)
+
+            is WindwardModpackBootstrap.AlreadyInstalledException -> {
+                markModpackReady()
+                return
+            }
+
+            null -> getString(R.string.splash_runtime_modpack_failed)
+            else -> DownloadProviders.localizeErrorMessage(requireContext(), error)
+        }
+        showErrorDialog(message)
     }
 
     private fun launchInstall(
@@ -266,6 +449,7 @@ class RuntimeFragment : FCLFragment(), View.OnClickListener {
 
     private fun showErrorDialog(message: String) {
         installing = false
+        modpackInstalling = false
         lifecycleScope.launch(Dispatchers.Main) {
             FCLAlertDialog.Builder(requireContext())
                 .setMessage(message)
@@ -274,6 +458,11 @@ class RuntimeFragment : FCLFragment(), View.OnClickListener {
                 .create()
                 .show()
         }
+    }
+
+    override fun onDestroyView() {
+        clearDisplayedTask()
+        super.onDestroyView()
     }
 
     companion object {

@@ -26,6 +26,7 @@ import com.tungsten.fcl.R
 import com.tungsten.fcl.databinding.ActivitySplashBinding
 import com.tungsten.fcl.fragment.EulaFragment
 import com.tungsten.fcl.fragment.RuntimeFragment
+import com.tungsten.fcl.game.WindwardModpackBootstrap
 import com.tungsten.fcl.setting.ConfigHolder
 import com.tungsten.fcl.setting.Controllers
 import com.tungsten.fcl.util.LegalAgreement
@@ -40,6 +41,8 @@ import com.tungsten.fcllibrary.util.LocaleUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
@@ -57,8 +60,13 @@ class SplashActivity : FCLActivity() {
     var java21: Boolean = false
     var java25: Boolean = false
     var jna: Boolean = false
+    var windwardPack: Boolean = false
     lateinit var binding: ActivitySplashBinding
     private lateinit var sharedPreferences: SharedPreferences
+    private val launcherCoreMutex = Mutex()
+    @Volatile
+    private var launcherCoreReady = false
+    private var openingLauncher = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -129,8 +137,20 @@ class SplashActivity : FCLActivity() {
                 Logging.start(Paths.get(FCLPath.LOG_DIR))
                 initState()
             }.await()
-            if (lwjgl && cacio && cacio17 && java8 && java17 && java21 && java25 && jna) {
-                enterLauncher()
+            if (areRuntimesReady()) {
+                try {
+                    prepareLauncherCore()
+                    windwardPack = withContext(Dispatchers.IO) {
+                        WindwardModpackBootstrap.isInstalled(this@SplashActivity)
+                    }
+                    if (windwardPack) {
+                        enterLauncher()
+                    } else {
+                        start()
+                    }
+                } catch (e: Exception) {
+                    showInitializationError(e)
+                }
             } else {
                 start()
             }
@@ -146,15 +166,18 @@ class SplashActivity : FCLActivity() {
             .commitAllowingStateLoss()
     }
 
-    fun enterLauncher() {
-        lifecycleScope.launch {
+    private fun areRuntimesReady(): Boolean =
+        lwjgl && cacio && cacio17 && java8 && java17 && java21 && java25 && jna
+
+    suspend fun prepareLauncherCore() {
+        if (launcherCoreReady) return
+        launcherCoreMutex.withLock {
+            if (launcherCoreReady) return@withLock
             withContext(Dispatchers.IO) {
                 RendererManager.init(this@SplashActivity)
                 JavaManager.init()
                 Controllers.init()
-                runCatching { ConfigHolder.init() }.exceptionOrNull()?.let {
-                    Logging.LOG.log(Level.WARNING, it.message)
-                }
+                ConfigHolder.init()
                 if (System.currentTimeMillis() - sharedPreferences.getLong(
                         "clear_cache", 0L
                     ) >= 3 * 1000 * 60 * 60 * 24
@@ -165,11 +188,38 @@ class SplashActivity : FCLActivity() {
                     }
                 }
             }
+            launcherCoreReady = true
+        }
+    }
+
+    fun enterLauncher() {
+        if (openingLauncher) return
+        openingLauncher = true
+        lifecycleScope.launch {
+            try {
+                prepareLauncherCore()
+            } catch (e: Exception) {
+                openingLauncher = false
+                showInitializationError(e)
+                return@launch
+            }
             startActivity(
                 handleModpack(Intent(this@SplashActivity, MainActivity::class.java)),
                 ActivityOptionsCompat.makeCustomAnimation(this@SplashActivity, 0, 0).toBundle()
             )
             finish()
+        }
+    }
+
+    private fun showInitializationError(error: Throwable) {
+        Logging.LOG.log(Level.WARNING, "Failed to initialize Windward", error)
+        FCLAlertDialog.Builder(this).apply {
+            setCancelable(false)
+            setAlertLevel(FCLAlertDialog.AlertLevel.ALERT)
+            setMessage(error.localizedMessage ?: error.toString())
+            setPositiveButton { init() }
+            setNegativeButton { finish() }
+            create().show()
         }
     }
 

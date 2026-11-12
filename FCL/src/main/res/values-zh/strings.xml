@@ -15,6 +15,16 @@
     <string name="splash_runtime_title">安装或更新运行环境</string>
     <string name="splash_runtime_install">安装 / 更新</string>
     <string name="splash_runtime_patching">正在优化运行环境…</string>
+    <string name="splash_runtime_modpack">Windward 游戏整合包</string>
+    <string name="splash_runtime_modpack_preparing">正在准备内置整合包…</string>
+    <string name="splash_runtime_modpack_downloading">正在下载整合包文件…</string>
+    <string name="splash_runtime_modpack_unpacking">正在安装整合包文件…</string>
+    <string name="splash_runtime_modpack_minecraft">正在下载 Minecraft 1.21.11…</string>
+    <string name="splash_runtime_modpack_fabric">正在安装 Fabric 0.19.5…</string>
+    <string name="splash_runtime_modpack_installing">正在安装 Windward 游戏…</string>
+    <string name="splash_runtime_modpack_failed">Windward 整合包安装失败。</string>
+    <string name="splash_runtime_modpack_conflict">已存在另一个名为“Windward 客户端”的游戏版本。请先重命名或删除该版本，然后重试。</string>
+    <string name="splash_runtime_modpack_invalid">APK 内置的 Windward 整合包无效，或与当前启动器版本不匹配。</string>
     <string name="missing_runtime_arch_files">当前安装的启动器缺少当前设备架构（%s）所需的运行时文件，请下载对应架构的安装包（%s）或是全架构安装包（%s）。</string>
     <string name="account">账户管理</string>
     <string name="version">版本列表</string>

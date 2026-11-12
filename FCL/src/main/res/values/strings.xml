@@ -24,6 +24,16 @@
     <string name="splash_runtime_java21" translatable="false">JRE 21</string>
     <string name="splash_runtime_java25" translatable="false">JRE 25</string>
     <string name="splash_runtime_jna" translatable="false">JNA</string>
+    <string name="splash_runtime_modpack">Windward game modpack</string>
+    <string name="splash_runtime_modpack_preparing">Preparing the bundled modpack…</string>
+    <string name="splash_runtime_modpack_downloading">Downloading modpack files…</string>
+    <string name="splash_runtime_modpack_unpacking">Installing modpack files…</string>
+    <string name="splash_runtime_modpack_minecraft">Downloading Minecraft 1.21.11…</string>
+    <string name="splash_runtime_modpack_fabric">Installing Fabric 0.19.5…</string>
+    <string name="splash_runtime_modpack_installing">Installing the Windward game…</string>
+    <string name="splash_runtime_modpack_failed">Failed to install the Windward modpack.</string>
+    <string name="splash_runtime_modpack_conflict">A different game version named “Windward 客户端” already exists. Rename or remove that version before retrying.</string>
+    <string name="splash_runtime_modpack_invalid">The bundled Windward modpack is invalid or does not match this launcher release.</string>
     <string name="splash_runtime_install">Install / Update</string>
     <string name="splash_runtime_patching">Optimizing runtime…</string>
     <string name="missing_runtime_arch_files">The currently installed launcher is missing the runtime files required for your device\'s architecture(%s). Please download the installation package for the corresponding architecture(%s) or the universal installation package(%s).</string>
