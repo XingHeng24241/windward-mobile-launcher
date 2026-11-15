@@ -42,10 +42,10 @@ import java.util.logging.Level;
 public final class WindwardModpackBootstrap {
     public static final String ASSET_PATH = "windward/modpack.mrpack";
     public static final String ASSET_SHA256 =
-            "D84FAA9172EB2561C323EB14E9AFC2850303DD3EDBCA42D0BACEE0BCC327379F";
-    public static final String VERSION_NAME = "Windward 客户端";
+            "4B28EF62A19982874216D595D5EC344212E2035AD9187A66092B9C0D6FCC613F";
     public static final String PACK_NAME = "Windward 客户端";
-    public static final String PACK_VERSION = "1.0.4";
+    public static final String PACK_VERSION = "1.0.5";
+    public static final String VERSION_NAME = PACK_NAME + " " + PACK_VERSION;
     public static final String MINECRAFT_VERSION = "1.21.11";
     public static final String FABRIC_VERSION = "0.19.5";
 

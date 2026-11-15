@@ -82,8 +82,8 @@ android {
         applicationId = "com.windward.launcher"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 1347
-        versionName = "1.3.4.5-Windward.3"
+        versionCode = 1348
+        versionName = "1.3.4.5-Windward.4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {

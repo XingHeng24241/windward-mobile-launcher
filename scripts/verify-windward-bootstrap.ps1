@@ -28,7 +28,7 @@ function Assert-Text {
 
 $assetRelative = 'FCL/src/main/assets/windward/modpack.mrpack'
 $assetPath = Join-Path $RepoRoot $assetRelative
-$expectedHash = 'D84FAA9172EB2561C323EB14E9AFC2850303DD3EDBCA42D0BACEE0BCC327379F'
+$expectedHash = '4B28EF62A19982874216D595D5EC344212E2035AD9187A66092B9C0D6FCC613F'
 if (-not (Test-Path -LiteralPath $assetPath -PathType Leaf)) {
     Add-Failure "Missing bundled MRPACK: $assetRelative"
 } else {
@@ -50,7 +50,7 @@ if (-not (Test-Path -LiteralPath $assetPath -PathType Leaf)) {
                 if ($manifest.name -ne 'Windward 客户端') {
                     Add-Failure "Unexpected pack name: $($manifest.name)"
                 }
-                if ($manifest.versionId -ne '1.0.4') {
+                if ($manifest.versionId -ne '1.0.5') {
                     Add-Failure "Unexpected pack version: $($manifest.versionId)"
                 }
                 if ($manifest.dependencies.minecraft -ne '1.21.11') {
@@ -69,8 +69,17 @@ if (-not (Test-Path -LiteralPath $assetPath -PathType Leaf)) {
 }
 
 Assert-Text 'FCL/src/main/java/com/tungsten/fcl/game/WindwardModpackBootstrap.java' `
-    'ASSET_SHA256[\s\S]*D84FAA9172EB2561C323EB14E9AFC2850303DD3EDBCA42D0BACEE0BCC327379F' `
+    'ASSET_SHA256[\s\S]*4B28EF62A19982874216D595D5EC344212E2035AD9187A66092B9C0D6FCC613F' `
     'fixed MRPACK identity'
+Assert-Text 'FCL/src/main/java/com/tungsten/fcl/game/WindwardModpackBootstrap.java' `
+    'PACK_VERSION\s*=\s*"1\.0\.5"' 'current Windward pack version'
+Assert-Text 'FCL/src/main/java/com/tungsten/fcl/game/WindwardModpackBootstrap.java' `
+    'VERSION_NAME\s*=\s*PACK_NAME\s*\+\s*" "\s*\+\s*PACK_VERSION' `
+    'version-specific installation directory'
+Assert-Text 'FCL/build.gradle.kts' `
+    'versionCode\s*=\s*1348' 'Windward Android version code'
+Assert-Text 'FCL/build.gradle.kts' `
+    'versionName\s*=\s*"1\.3\.4\.5-Windward\.4"' 'Windward Android version name'
 Assert-Text 'FCL/src/main/java/com/tungsten/fcl/game/WindwardModpackBootstrap.java' `
     'CONFIGURATION_FILE\s*=\s*"modpack\.cfg"' 'actual FCL modpack configuration filename'
 Assert-Text 'FCL/src/main/java/com/tungsten/fcl/game/WindwardModpackBootstrap.java' `

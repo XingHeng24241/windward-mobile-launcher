@@ -1,5 +1,6 @@
 package com.tungsten.fcl.game;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -21,6 +22,14 @@ import java.nio.file.StandardCopyOption;
 public class WindwardModpackBootstrapTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    @Test
+    public void updatedPackUsesDedicatedVersionDirectory() {
+        assertEquals("1.0.5", WindwardModpackBootstrap.PACK_VERSION);
+        assertEquals("Windward 客户端 1.0.5", WindwardModpackBootstrap.VERSION_NAME);
+        assertFalse(WindwardModpackBootstrap.PACK_NAME.equals(
+                WindwardModpackBootstrap.VERSION_NAME));
+    }
 
     @Test
     public void exactCompletedInstallationIsAccepted() throws Exception {
